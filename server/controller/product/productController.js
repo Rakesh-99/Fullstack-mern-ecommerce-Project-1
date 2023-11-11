@@ -4,17 +4,24 @@ import ErrorHandler from '../../utils/errorHandler.js';
 
 
 
-
 // Get all products : 
 export const getAllProduct = asyncHandler(async (req, res, next) => {
 
-    const getAllProducts = await productModel.find();
+    // Searching product api : 
+    const search = req.query.keyword || '';
+
+    const queryData = {
+        name: { $regex: search, $options: 'i' }
+    }
+
+    const getAllProducts = await productModel.find(queryData);
 
     if (getAllProducts.length === 0) {
         return next(new ErrorHandler('No product found!', 400));
     } else {
         return res.status(200).json({ success: true, message: getAllProducts })
     }
+
 });
 
 
