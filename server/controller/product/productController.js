@@ -7,21 +7,63 @@ import ErrorHandler from '../../utils/errorHandler.js';
 // Get all products : 
 export const getAllProduct = asyncHandler(async (req, res, next) => {
 
+    const queryData = {};
+
+
     // Searching product api : 
-    const search = req.query.keyword || '';
+    const searchByName = req.query.search || '';          // Query for searching product 
 
-    const queryData = {
-        name: { $regex: search, $options: 'i' }
+    if (searchByName) {
+        queryData.name = {
+            $regex: searchByName,
+            $options: 'i'
+        }
     }
 
-    const getAllProducts = await productModel.find(queryData);
 
-    if (getAllProducts.length === 0) {
-        return next(new ErrorHandler('No product found!', 400));
-    } else {
-        return res.status(200).json({ success: true, message: getAllProducts })
+    // Filter product by category :
+    const category = req.query.category || 'All';    // Query for filtering the Category
+    if (category !== 'All') {
+        queryData.category = category;
     }
 
+    // Filter product by price :
+
+    const minPrice = parseInt(req.query.minPrice) || 0;
+    const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
+
+    if (minPrice !== 0 || maxPrice !== Number.MAX_SAFE_INTEGER) {
+
+        queryData.price = {
+            $gte: minPrice,
+            $lte: maxPrice
+        }
+    }
+
+
+    // Pagination api :
+
+    const page = parseInt(req.query.page) || 1;
+    const showProductPerPage = 3;
+    const totalProducts = await productModel.countDocuments();
+    const totalPages = Math.ceil(totalProducts / showProductPerPage);
+
+    if (page > totalPages) {
+        return next(new ErrorHandler('No page found!', 400));
+    }
+
+    try {
+
+        const getAllProducts = await productModel.find(queryData)
+            .skip((page - 1) * showProductPerPage)
+            .limit(showProductPerPage)
+            .exec();
+
+        return res.status(200).json({ success: true, message: 'Product has been fetched', products: getAllProducts.length > 0 ? getAllProducts : 'No product found' });
+
+    } catch (error) {
+        return next(new ErrorHandler('Internal Server Error', 500));
+    }
 });
 
 
