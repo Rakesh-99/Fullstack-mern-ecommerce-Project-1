@@ -8,9 +8,16 @@ import connectDB from './config/configDB.js';
 const DB_URI = process.env.DB_URI;
 import error from './middleware/error.js';
 import productRouters from './routes/product/productRouters.js';
+import cookieParser from 'cookie-parser';
+
+
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+
+
 app.use('/user', userRouter);
 app.use('/product', productRouters);
 app.use(error);

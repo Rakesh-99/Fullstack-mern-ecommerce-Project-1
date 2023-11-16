@@ -1,17 +1,16 @@
 import express from 'express';
 const productRouters = express.Router();
-import { createProduct, deleteproduct, getAllProduct, updateProduct } from '../../controller/product/productController.js';
-
-
-
+import { createProduct, deleteproduct, getAllProduct, updateProduct, } from '../../controller/product/productController.js';
+import { isUserAuthenticated } from '../../middleware/auth.js';
 
 
 
 productRouters
     .get('/', getAllProduct)
-    .post('/createproduct', createProduct)
-    .put('/updateproduct/:id', updateProduct)
-    .delete('/deleteproduct/:id', deleteproduct)
+    .post('/createproduct', isUserAuthenticated, createProduct)
+    .put('/updateproduct/:id', isUserAuthenticated, updateProduct)
+    .delete('/deleteproduct/:id', isUserAuthenticated, deleteproduct)
+
 
 
 

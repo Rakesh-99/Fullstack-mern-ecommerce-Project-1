@@ -1,6 +1,6 @@
 import express from 'express';
 const userRouter = express.Router();
-import { createUser, deleteUser, getAllUsers, loginUser, updateUser } from '../../controller/user/userController.js';
+import { createUser, deleteUser, getAllUsers, loginUser, updateUser, logOutUser } from '../../controller/user/userController.js';
 
 
 
@@ -11,6 +11,7 @@ userRouter.get('/', getAllUsers)
     .post('/login', loginUser)
     .put('/update/:id', updateUser)
     .delete('/delete/:id', deleteUser)
+    .get('/logout', logOutUser)
 
 
 

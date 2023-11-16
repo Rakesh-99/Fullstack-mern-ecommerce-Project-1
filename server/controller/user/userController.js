@@ -19,10 +19,13 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
     }
 });
 
+
+
 // Create user : 
 export const createUser = asyncHandler(async (req, res, next) => {
 
-    const { firstname, lastname, email, mobile_no, password } = req.body;
+    const { firstname, lastname, email, password, avatar } = req.body;
+
 
     const findExistEmail = await userModel.findOne({ email: email });
     const findExistMobileNumber = await userModel.findOne({ mobile_no: req.body.mobile_no });
@@ -39,7 +42,7 @@ export const createUser = asyncHandler(async (req, res, next) => {
             firstname,
             lastname,
             email,
-            mobile_no,
+            avatar,
             password: hashedPassWord
         });
         await createUser.save();
@@ -48,34 +51,59 @@ export const createUser = asyncHandler(async (req, res, next) => {
 
 });
 
+
+
 // Login user : 
 export const loginUser = asyncHandler(async (req, res, next) => {
 
     const { email, password } = req.body;
 
-    const verifiedUser = await userModel.findOne({ email: email });
+    const user = await userModel.findOne({ email: email });
 
-    if (!verifiedUser) {
-        return next(new ErrorHandler('Invalid authentication!', 400));
+    if (!user) {
+
+        return next(new ErrorHandler('Invalid Email or Password!', 400));
+
     } else {
 
-        const matchPassword = await bcrypt.compare(password, verifiedUser.password);
+        const matchPassword = await bcrypt.compare(password, user.password);
 
         if (matchPassword) {
 
-            const accessToken = jwt.sign(verifiedUser.toJSON(), process.env.ACCESS_TOKEN, { expiresIn: '10m' });
-            const refreshToken = jwt.sign(verifiedUser.toJSON(), process.env.REFRESH_TOKEN);
+            const accessToken = jwt.sign({ id: user._id.toString() }, process.env.ACCESS_TOKEN);
+
+
+
+            // Saving accessToken in cookie : 
+            res.cookie('accessToken', accessToken, { httpOnly: true });
+
 
             const token = new userTokenModel({
                 token: accessToken
             });
+
             await token.save();
-            return res.status(200).json({ message: 'success', myAccessToken: accessToken, myRefreshToken: refreshToken, email: verifiedUser.email, mobile_no: verifiedUser.mobile_no })
+            return res.status(200).json({ message: 'success', myAccessToken: accessToken, email: user.email })
         } else {
-            return next(new ErrorHandler('Invalid authentication!', 400));
+            return next(new ErrorHandler('Invalid Email or Password!', 400));
         }
-    }
+    };
 });
+
+
+
+
+// Logout User :
+
+export const logOutUser = asyncHandler(async (req, res, next) => {
+
+
+    res.cookie("accessToken", null, { expiresIn: new Date(Date.now()), httpOnly: true })
+
+    return res.status(200).json({ success: true, message: 'User has been logged out!' });
+});
+
+
 
 
 // Update user : 
