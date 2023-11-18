@@ -7,7 +7,7 @@ dotenv.config();
 
 
 
-// Verifying accessToken : 
+// Verifying accessToken : i.e if token available then user might access some resources : 
 
 export const isUserAuthenticated = asyncHandler(async (req, res, next) => {
 
@@ -35,3 +35,17 @@ export const isUserAuthenticated = asyncHandler(async (req, res, next) => {
         }
     }
 });
+
+// Auth middleware validation for accessing resources : 
+
+export const userRole = (...roles) => {
+
+    return (req, res, next) => {
+
+        if (roles.includes(req.user.role)) {
+            next();
+        } else {
+            return next(new ErrorHandler(`The '${req.user.role}' is not allowed to access this resources!`, 403));
+        }
+    }
+};
