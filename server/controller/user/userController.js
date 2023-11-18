@@ -153,7 +153,7 @@ export const forgetPassword = asyncHandler(async (req, res, next) => {
 
 
 // Reset password : 
-export const resetPassword = async (req, res, next) => {
+export const resetPassword = asyncHandler(async (req, res, next) => {
     const { token } = req.params;
     const tokenData = await userModel.findOne({ resetPasswordToken: token });
     if (tokenData) {
@@ -169,10 +169,7 @@ export const resetPassword = async (req, res, next) => {
     } else {
         return next(new ErrorHandler('Token is invalid or has expired!', 400));
     }
-};
-
-
-
+});
 
 
 
